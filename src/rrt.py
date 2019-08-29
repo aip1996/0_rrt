@@ -33,9 +33,7 @@ class Vertex(object):
     Attributes:
         config     -- stores a Config object
         parent     -- the parent for FORWARD vertex, the child for BACKWARD vertex
-        trajstring -- a trajectorystring from its parent (or child)
-        s_d_min      -- minimum reachable s_d
-        s_d_max      -- maximum reachable s_d
+
         level      -- its level from the root of the tree (0 for the root)
         #_#_#???
         drawn      -- True if this vertex has been plotted via Vertex::Plot
@@ -133,47 +131,12 @@ class RRTPlanner(object):
     def random_joint_values(self, amount_dof):
         # assign lower and upper limits of joint values
         [lower_limits, upper_limits] = self.robot.GetDOFLimits()
-        
-  
-        
 
         q_rand = np.zeros(amount_dof)
         for dof_range in xrange(amount_dof):
             q_rand[dof_range] = self.RANDOM_NUMBER_GENERATOR.uniform(
                 lower_limits[dof_range], upper_limits[dof_range])
 
-        """
-        #_#_# CHANGE JOINT LIMITS
-        PI = np.pi
-        lower_limits[0] = -2 #lowerlimits[0]
-        upper_limits[0] = 2
-        lower_limits[1] = 1 #lowerlimits[0]
-        upper_limits[1] = 2
-        lower_limits[2] = -0.1 #lowerlimits[2]
-        upper_limits[2] = 0.5 #upperlimits[2]
-        lower_limits[3] = -PI #lowerlimits[3]
-        upper_limits[3] = PI/3 #upperlimits[3]
-        lower_limits[4] = lower_limits[4]
-        upper_limits[4] = 0 #upperlimits[4]
-        lower_limits[5] = PI/4 #lowerlimits[5]   
-        upper_limits[5] = 3*PI/4 #upperlimits[5]   
-
-        passed = False
-        while (not passed):
-            q_rand = np.zeros(amount_dof)
-            for dof_range in xrange(amount_dof):
-                q_rand[dof_range] = self.RANDOM_NUMBER_GENERATOR.uniform(
-                    lower_limits[dof_range], upper_limits[dof_range])
-            ## check if the tilting angle of the bottle is too large
-            z_world = np.array([0, 0, 1])
-            with self.robot:
-                self.robot.SetDOFValues(q_rand, range(self.robot.GetDOF()), CLA_NOTHING)
-                H = self.robot.GetLink('tray').GetTransform()
-                z_tray = [H[0][2], H[1][2], H[2][2]]
-                theta = np.arccos(np.dot(z_tray, z_world))
-                if (abs(theta) <= np.pi/4.0):
-                    passed = True # do not have any other constraint for now.
-        """
         return q_rand
 
 
@@ -363,8 +326,6 @@ class BiRRTPlanner(RRTPlanner):
             a0, a1 = utils.interpolate_polynomial_1st(q_beg, q_end)
             coefficient_ascend = utils.coefficient_set_1st(a0, a1)
 
-
-
             path_instance = toppra.PolynomialPath(coefficient_ascend)
             #_#_#print "\textend_forward : check_path_collision"
             path_in_collision = utils.check_path_collision(
@@ -426,8 +387,6 @@ class BiRRTPlanner(RRTPlanner):
             a0, a1 = utils.interpolate_polynomial_1st(q_beg, q_end)
             coefficient_ascend = utils.coefficient_set_1st(a0, a1)
 
-
-
             path_instance = toppra.PolynomialPath(coefficient_ascend)
             #_#_#print "\textend_backward : check_path_collision"
             path_in_collision = utils.check_path_collision(
@@ -479,7 +438,6 @@ class BiRRTPlanner(RRTPlanner):
             
             #_#_#print "\tconnect_backward : check_dof_limit"
 
-
             path_instance = toppra.PolynomialPath(coefficient_ascend)
             #_#_#print "\tconnect_backward : check_path_collision"
             path_in_collision = utils.check_path_collision(
@@ -516,7 +474,6 @@ class BiRRTPlanner(RRTPlanner):
 
             a0, a1 = utils.interpolate_polynomial_1st(q_beg, q_end)
             coefficient_ascend = utils.coefficient_set_1st(a0, a1)
-
 
             path_instance = toppra.PolynomialPath(coefficient_ascend)
             #_#_#print "\tconnect_forward : check_path_collision"

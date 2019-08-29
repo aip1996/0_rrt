@@ -19,9 +19,7 @@ import utils
 
 
 def main():
-    #################### Statistics ####################
 
-    #################### Environment Setting ####################
     env = Environment()
     env.Load('../xml/btenv.xml')
     collision_checker = RaveCreateCollisionChecker(env, 'ode')
@@ -38,8 +36,6 @@ def main():
     box_5 = env.GetKinBody('box5')
 
     floor.Enable(False)
-
-
 
     opening_height = 0.44#_#_#
     table_z_offset = 0.59
@@ -85,7 +81,6 @@ def main():
 
     RANDOM = random.SystemRandom()
 
-    #################### Configurations ####################
     q_start = np.deg2rad([-90, 70, 10, 0, -80, 0.])
     q_goal = np.deg2rad([90, 70, 10, 0, -80, 0.])
 
@@ -137,7 +132,6 @@ def main():
     status_0 = False ## topp status before shortcutting
     status_1 = False ## topp status after shortcutting
 
-
     time_sum = 0
     for i in arange(1):
     #_#_#while (not status_0):
@@ -145,7 +139,6 @@ def main():
         birrt_instance = rrt.BiRRTPlanner(vertex_start, vertex_goal, 
             robot, all_constraints, nearest_neighbor, metric_type)
 
-        #################### Plan a Path ####################
         allotted_time = 36000
         birrt_instance.run(allotted_time)
         
@@ -165,7 +158,7 @@ def main():
     for t in np.arange(0, t_duration, 0.01):
         robot.SetActiveDOFValues(joint_trajectory.eval(t))
         P.append(manip.GetTransform()[0:3, 3])
-        time.sleep(0.01)  # 5x slow down 
+        time.sleep(0.05)  # 5x slow down 
     robot.SetActiveDOFValues(joint_trajectory.eval(t_duration))
     handle = env.drawlinestrip(points = np.vstack((P)), linewidth = 3)
     import IPython ; IPython.embed()#_#_#

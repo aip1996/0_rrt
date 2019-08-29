@@ -1,8 +1,6 @@
 from openravepy import *
 from pylab import *
 
-
-
 import string
 import numpy as np
 import random
