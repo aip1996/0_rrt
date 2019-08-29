@@ -46,7 +46,7 @@ class Vertex(object):
         self.parent_index = None # this is to be assigned when added to a tree
         self.index = 0 # this is to be assigned when added to a tree
         self.level = 0
-        # AVP-related
+
         self.coefficient_descend = []
 
 class Tree(object):
@@ -103,7 +103,7 @@ class RRTPlanner(object):
         self.is_found = False
         self.RANDOM_NUMBER_GENERATOR = random.SystemRandom()        
         # default parameters
-        self.STEP_SIZE = 0.8
+        self.STEP_SIZE = 0.3
 
     def __str__(self):
         s = 'Total running time: {0} s.\n'.format(self.running_time)
@@ -134,7 +134,16 @@ class RRTPlanner(object):
         # assign lower and upper limits of joint values
         [lower_limits, upper_limits] = self.robot.GetDOFLimits()
         
-        """#_#_# CHANGE JOINT LIMITS"""
+  
+        
+
+        q_rand = np.zeros(amount_dof)
+        for dof_range in xrange(amount_dof):
+            q_rand[dof_range] = self.RANDOM_NUMBER_GENERATOR.uniform(
+                lower_limits[dof_range], upper_limits[dof_range])
+
+        """
+        #_#_# CHANGE JOINT LIMITS
         PI = np.pi
         lower_limits[0] = -2 #lowerlimits[0]
         upper_limits[0] = 2
@@ -147,8 +156,8 @@ class RRTPlanner(object):
         lower_limits[4] = lower_limits[4]
         upper_limits[4] = 0 #upperlimits[4]
         lower_limits[5] = PI/4 #lowerlimits[5]   
-        upper_limits[5] = 3*PI/4 #upperlimits[5]     
-        
+        upper_limits[5] = 3*PI/4 #upperlimits[5]   
+
         passed = False
         while (not passed):
             q_rand = np.zeros(amount_dof)
@@ -164,6 +173,7 @@ class RRTPlanner(object):
                 theta = np.arccos(np.dot(z_tray, z_world))
                 if (abs(theta) <= np.pi/4.0):
                     passed = True # do not have any other constraint for now.
+        """
         return q_rand
 
 
@@ -247,11 +257,11 @@ class RRTPlanner(object):
         return False
 
 
-class AVPBiRRTPlanner(RRTPlanner):
+class BiRRTPlanner(RRTPlanner):
     def __init__(self, vertex_start, vertex_goal, robot, all_constraints, 
         nearest_neighbor = -1, metric_type = 1):
 
-        super(AVPBiRRTPlanner, self).__init__(vertex_start, vertex_goal, robot)
+        super(BiRRTPlanner, self).__init__(vertex_start, vertex_goal, robot)
 
         self.all_constraints = all_constraints
         self.nearest_neighbor = nearest_neighbor
@@ -268,7 +278,7 @@ class AVPBiRRTPlanner(RRTPlanner):
             vertex_transform = self.robot.GetLink('link6').GetTransform()
         vertex_position = vertex_transform[0:3, 3]
         self.handles_vertex.append( self.robot.GetEnv().plot3( 
-            points=np.array(vertex_position ), pointsize=0.003, 
+            points=np.array(vertex_position ), pointsize=5, 
             colors=np.array( (0,0,1) ), drawstyle=1) )
 
     def plot_edge(self, path_input):
@@ -340,7 +350,7 @@ class AVPBiRRTPlanner(RRTPlanner):
             config_new = Config(q_end)
             if not (delta <= self.STEP_SIZE):
                 delta = self.distance(vertex_near.config, config_new)
-            n_check_grid = int(delta * 10)
+            n_check_grid = int(delta * 20)
 
             #_#_#print "\textend_forward : Check_Configuration_Collision"
             config_in_collision = utils.check_configuration_collision(
@@ -350,8 +360,7 @@ class AVPBiRRTPlanner(RRTPlanner):
                 #_#_#print "\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 continue
 
-            a0, a1 = utils.interpolate_polynomial_1st(
-                q_beg, q_end)
+            a0, a1 = utils.interpolate_polynomial_1st(q_beg, q_end)
             coefficient_ascend = utils.coefficient_set_1st(a0, a1)
 
 
@@ -404,7 +413,7 @@ class AVPBiRRTPlanner(RRTPlanner):
             config_new = Config(q_beg)
             if not (delta <= self.STEP_SIZE):
                 delta = self.distance(vertex_near.config, config_new)
-            n_check_grid = int(delta * 10)
+            n_check_grid = int(delta * 20)
 
             #_#_#print "\textend_backward : Check_Configuration_Collision"
             config_in_collision = utils.check_configuration_collision(
@@ -414,8 +423,7 @@ class AVPBiRRTPlanner(RRTPlanner):
                 #_#_#print "\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 continue
 
-            a0, a1 = utils.interpolate_polynomial_1st(
-                q_beg, q_end)
+            a0, a1 = utils.interpolate_polynomial_1st(q_beg, q_end)
             coefficient_ascend = utils.coefficient_set_1st(a0, a1)
 
 
@@ -475,7 +483,7 @@ class AVPBiRRTPlanner(RRTPlanner):
             path_instance = toppra.PolynomialPath(coefficient_ascend)
             #_#_#print "\tconnect_backward : check_path_collision"
             path_in_collision = utils.check_path_collision(
-                self.robot, path_instance, 30)
+                self.robot, path_instance, 100)
             if path_in_collision:
                 #_#_#print "\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 del path_instance
@@ -513,7 +521,7 @@ class AVPBiRRTPlanner(RRTPlanner):
             path_instance = toppra.PolynomialPath(coefficient_ascend)
             #_#_#print "\tconnect_forward : check_path_collision"
             path_in_collision = utils.check_path_collision(
-                self.robot, path_instance, 30)
+                self.robot, path_instance, 100)
             if path_in_collision:
                 #_#_#print "\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                 del path_instance

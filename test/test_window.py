@@ -13,16 +13,10 @@ import random
 import copy
 import toppra
 
-import avp_rrt
+import rrt
 import utils
 
 
-"""
-For Denso Reaching Task
-Subtask II
-
-using AVPBiRRT + TOPP FrictionLimits
-"""
 
 def main():
     #################### Statistics ####################
@@ -65,7 +59,7 @@ def main():
     box_3.SetTransform( np.array( [
         [  1.0,  0.0,  0.0,  0.00],
         [  0.0,  1.0,  0.0, -0.625],
-        [  0.0,  0.0,  1.0,  0.570],
+        [  0.0,  0.0,  1.0,  0.60],
         [  0.0,  0.0,  0.0,  1.00] ] ) )
 
     #_#_#box_3 z 0.455
@@ -73,8 +67,10 @@ def main():
     box_4.SetTransform( np.array( [
         [  1.0,  0.0,  0.0,  0.00],
         [  0.0,  1.0,  0.0,  0.101],
-        [  0.0,  0.0,  1.0,  0.75 + table_z_offset],
+        [  0.0,  0.0,  1.0,  0.85 + table_z_offset],
         [  0.0,  0.0,  0.0,  1.00] ] ) )
+
+    #_#_#box_4 z 0.75
 
     box_5.SetTransform( np.array( [
         [  1.0,  0.0,  0.0,  0.00],
@@ -133,10 +129,10 @@ def main():
     #_#_#
     SMALL = 1e-6
 
-    config_start = avp_rrt.Config(q_start)
-    vertex_start = avp_rrt.Vertex(config_start, avp_rrt.FORWARD)
-    config_goal = avp_rrt.Config(q_goal)
-    vertex_goal = avp_rrt.Vertex(config_goal, avp_rrt.BACKWARD)
+    config_start = rrt.Config(q_start)
+    vertex_start = rrt.Vertex(config_start, rrt.FORWARD)
+    config_goal = rrt.Config(q_goal)
+    vertex_goal = rrt.Vertex(config_goal, rrt.BACKWARD)
 
     status_0 = False ## topp status before shortcutting
     status_1 = False ## topp status after shortcutting
@@ -146,7 +142,7 @@ def main():
     for i in arange(1):
     #_#_#while (not status_0):
 
-        birrt_instance = avp_rrt.AVPBiRRTPlanner(vertex_start, vertex_goal, 
+        birrt_instance = rrt.BiRRTPlanner(vertex_start, vertex_goal, 
             robot, all_constraints, nearest_neighbor, metric_type)
 
         #################### Plan a Path ####################
@@ -154,7 +150,7 @@ def main():
         birrt_instance.run(allotted_time)
         
         coefficient_descend, amount_segment = birrt_instance.generate_final_coefficient()
-        import ipdb ; ipdb.set_trace()#_#_#
+
         path_instance = toppra.PiecewisePolynomialPath(coefficient_descend)
         grid_points = np.linspace(0, amount_segment, 100*amount_segment)
         toppra_instance = toppra.algorithm.TOPPRA(all_constraints, path_instance, 
